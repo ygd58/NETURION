@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { getBrowserSigner, initAccount, encryptPrompt, decryptResponse } from '../lib/fairblock';
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+const BACKEND = '/api/infer';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -23,7 +23,7 @@ export default function Home() {
   const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch(`${BACKEND}/health`)
+    fetch('/api/health')
       .then(r => r.json())
       .then(d => setNodeOk(d.status === 'ok'))
       .catch(() => setNodeOk(false));
@@ -57,7 +57,7 @@ export default function Home() {
     try {
       encryptPrompt(prompt);
       setStatus('Sending to NETURION node...');
-      const res = await fetch(`${BACKEND}/infer`, {
+      const res = await fetch(BACKEND, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, wallet, session_id: `s_${Date.now()}` }),
@@ -78,7 +78,6 @@ export default function Home() {
 
   return (
     <main style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#080810', color:'#e0e0e0', fontFamily:'monospace' }}>
-      {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 24px', borderBottom:'1px solid #1a1a2e', background:'#0d0d1a' }}>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           <span style={{ fontSize:24, color:'#7c3aed' }}>⬡</span>
@@ -92,7 +91,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Wallet bar */}
       <div style={{ display:'flex', alignItems:'center', gap:12, padding:'8px 24px', borderBottom:'1px solid #1a1a2e', background:'#0d0d1a', minHeight:40 }}>
         {!wallet ? (
           <button onClick={connect} style={{ background:'#7c3aed', color:'#fff', border:'none', borderRadius:6, padding:'7px 18px', cursor:'pointer', fontFamily:'monospace', fontSize:12 }}>
@@ -109,7 +107,6 @@ export default function Home() {
         {status && <span style={{ fontSize:11, color:'#a78bfa', marginLeft:'auto' }}>{status}</span>}
       </div>
 
-      {/* Chat */}
       <div style={{ flex:1, overflowY:'auto', padding:'24px', display:'flex', flexDirection:'column', gap:16 }}>
         {messages.length === 0 && (
           <div style={{ margin:'auto', textAlign:'center' }}>
@@ -149,7 +146,6 @@ export default function Home() {
         <div ref={bottom} />
       </div>
 
-      {/* Input */}
       <div style={{ display:'flex', gap:10, padding:'14px 24px', borderTop:'1px solid #1a1a2e', background:'#0d0d1a' }}>
         <input
           style={{ flex:1, background:'#1a1a2e', border:'1px solid #252540', borderRadius:8, padding:'10px 14px', color:'#e0e0e0', fontFamily:'monospace', fontSize:13, outline:'none' }}
@@ -162,7 +158,7 @@ export default function Home() {
         <button
           onClick={send}
           disabled={!ready || loading || !input.trim()}
-          style={{ background:'#7c3aed', color:'#fff', border:'none', borderRadius:8, padding:'10px 20px', cursor:'pointer', fontSize:16, opacity:(!ready||loading||!input.trim())?0.4:1, transition:'opacity 0.2s' }}
+          style={{ background:'#7c3aed', color:'#fff', border:'none', borderRadius:8, padding:'10px 20px', cursor:'pointer', fontSize:16, opacity:(!ready||loading||!input.trim())?0.4:1 }}
         >→</button>
       </div>
 
