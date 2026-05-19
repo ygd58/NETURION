@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND = process.env.BACKEND_URL || 'http://65.21.73.117:3001';
-
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const res = await fetch(`${BACKEND}/infer`, {
+  const { prompt, wallet, session_id } = await req.json();
+
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: `You are NETURION — a confidential AI agent on Fairblock Network. All prompts are end-to-end encrypted. User wallet: ${wallet}` },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 1024,
+    }),
   });
+
   const data = await res.json();
-  return NextResponse.json(data);
+  const response = data.choices?.[0]?.message?.content || '';
+  return NextResponse.json({ response, model: 'llama-3.1-8b-instant', session_id });
 }
